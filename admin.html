@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NikWeb Admin 🔐</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#62c8ff;padding:20px}
+.wrap{max-width:760px;margin:auto}.card{background:#fff;border:5px solid #222;border-radius:18px;padding:24px;margin:18px 0;box-shadow:0 7px 0 #222}
+h1{color:#fff;text-align:center;text-shadow:3px 3px #111}.row{display:flex;gap:10px;flex-wrap:wrap}
+input{padding:12px;border:3px solid #222;border-radius:9px;font-size:16px;flex:1;min-width:180px}
+button{padding:12px 18px;border:3px solid #222;border-radius:9px;background:#ffd21c;font-weight:bold;cursor:pointer}
+.danger{background:#ff7777}.muted{opacity:.7}.item{border:2px solid #222;border-radius:10px;padding:10px;margin:8px 0;display:flex;justify-content:space-between;gap:8px;align-items:center}
+#panel{display:none}.notice{background:#fff3b0;padding:12px;border:2px solid #222;border-radius:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🔐 NikWeb Admin</h1>
+<div class="card" id="login">
+<h2>Admin login</h2>
+<p>This first version is a local demo. It is <b>not a secure public login</b> yet.</p>
+<div class="row"><input id="password" type="password" placeholder="Demo password"><button onclick="login()">Log in</button></div>
+<p class="muted">Demo password: <b>nikweb</b></p>
+</div>
+<div id="panel">
+<div class="notice">⚠️ Anything added here is saved in this browser only. For a real public admin that works from any device, NikWeb needs online storage/authentication.</div>
+<div class="card">
+<h2>🔗 Add a link</h2>
+<div class="row"><input id="linkName" placeholder="Link name"><input id="linkUrl" placeholder="https://example.com"><button onclick="addLink()">Add</button></div>
+<div id="linkList"></div>
+</div>
+<div class="card">
+<h2>📁 Add a file link</h2>
+<p class="muted">In this demo, enter the URL of a file already hosted online.</p>
+<div class="row"><input id="fileName" placeholder="File name"><input id="fileUrl" placeholder="https://..."><button onclick="addFile()">Add</button></div>
+<div id="fileList"></div>
+</div>
+<div class="card"><button onclick="logout()">Log out</button> <a href="index.html">Open NikWeb</a></div>
+</div>
+</div>
+<script>
+function login(){if(document.getElementById("password").value==="nikweb"){sessionStorage.setItem("nik_admin","1");show()}else alert("Wrong demo password.");}
+function show(){if(sessionStorage.getItem("nik_admin")==="1"){document.getElementById("login").style.display="none";document.getElementById("panel").style.display="block";render()}}
+function logout(){sessionStorage.removeItem("nik_admin");location.reload()}
+function read(k){return JSON.parse(localStorage.getItem(k)||"[]")}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function addLink(){let n=linkName.value.trim(),u=linkUrl.value.trim();if(!n||!u)return alert("Enter a name and URL.");let a=read("nikweb_links");a.push({name:n,url:u});save("nikweb_links",a);linkName.value=linkUrl.value="";render()}
+function addFile(){let n=fileName.value.trim(),u=fileUrl.value.trim();if(!n||!u)return alert("Enter a file name and URL.");let a=read("nikweb_files");a.push({name:n,url:u});save("nikweb_files",a);fileName.value=fileUrl.value="";render()}
+function removeItem(k,i){let a=read(k);a.splice(i,1);save(k,a);render()}
+function render(){
+ linkList.innerHTML=read("nikweb_links").map((x,i)=>`<div class="item">${esc(x.name)}<button class="danger" onclick="removeItem('nikweb_links',${i})">Delete</button></div>`).join("")||"<p class='muted'>No links.</p>";
+ fileList.innerHTML=read("nikweb_files").map((x,i)=>`<div class="item">${esc(x.name)}<button class="danger" onclick="removeItem('nikweb_files',${i})">Delete</button></div>`).join("")||"<p class='muted'>No files.</p>";
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+show();
+</script>
+</body>
+</html>
